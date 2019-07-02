@@ -12,6 +12,8 @@ export class DomainWhitelistComponent implements OnInit {
   domainWhiteListForm: FormGroup;
   whiteListingLimit: number;
   uniqueIps: Set<string> = new Set();
+  savedIps: string[];
+  isDataModified = false;
 
 
   constructor(public fb: FormBuilder, private activatedRoute: ActivatedRoute) {
@@ -56,6 +58,9 @@ export class DomainWhitelistComponent implements OnInit {
 
   deleteIp(item, index) {
     const lastItemIp = this.ips.at(this.ips.controls.length - 1).value.ip;
+    if (this.savedIps.includes(item.value.ip)) {
+      this.isDataModified = true;
+    }
     this.ips.removeAt(index);
     this.ips.setControl(this.ips.controls.length - 1, this.fb.group({
       ip: [lastItemIp, Validators.pattern(this.regExpForIpAddress())],
@@ -77,6 +82,7 @@ export class DomainWhitelistComponent implements OnInit {
       sessionStorage.setItem('whiteListedIps', JSON.stringify(whiteListedIps));
       const whiteListedIpsSaved = JSON.parse(sessionStorage.getItem('whiteListedIps'));
       this.domainWhiteListForm.reset();
+      this.savedIps = whiteListedIpsSaved;
       this.rePopulateAfterSaving(whiteListedIpsSaved);
     }
 
@@ -88,7 +94,8 @@ export class DomainWhitelistComponent implements OnInit {
       formGroupArray.push(this.fb.group({
         ip: [whiteListedIps[i],
           Validators.pattern(this.regExpForIpAddress())],
-        add: (this.whiteListingLimit - whiteListedIps.length > 0) && (i === whiteListedIps.length - 1) && (whiteListedIps.length >= 2) || whiteListedIps.length === 1,
+        add: (this.whiteListingLimit - whiteListedIps.length > 0) && (i === whiteListedIps.length - 1)
+          && (whiteListedIps.length >= 2) || whiteListedIps.length === 1,
         remove: !(i === 0) || (whiteListedIps.length > 1 && i === 0)
       }));
     }
