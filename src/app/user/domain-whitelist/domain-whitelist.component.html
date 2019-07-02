@@ -14,8 +14,12 @@
         </div>
       </div>
     </div>
+    <p *ngIf="whiteListingLimit === ips.controls.length" class="text-danger">
+      Max limit reached!!!
+    </p>
     <button type="submit" class="btn btn-primary"
-            [disabled]="!domainWhiteListForm.valid || domainWhiteListForm.pristine ">Save
+            [disabled]="!domainWhiteListForm.valid || domainWhiteListForm.pristine">
+      Save
     </button>
   </form>
 </div>

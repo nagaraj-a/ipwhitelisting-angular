@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {FormArray, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
+import {isEmpty} from 'rxjs/operators';
 
 @Component({
   selector: 'app-domain-whitelist',
@@ -12,8 +13,9 @@ export class DomainWhitelistComponent implements OnInit {
   domainWhiteListForm: FormGroup;
   whiteListingLimit: number;
   uniqueIps: Set<string> = new Set();
-  savedIps: string[];
+  savedIps = [];
   isDataModified = false;
+  validIp = true;
 
 
   constructor(public fb: FormBuilder, private activatedRoute: ActivatedRoute) {
@@ -25,11 +27,18 @@ export class DomainWhitelistComponent implements OnInit {
     this.domainWhiteListForm = this.fb.group({
       ips: this.fb.array([this.fb.group({ip: ['', Validators.pattern(this.regExpForIpAddress())], add: true, remove: false})])
     });
+  }
 
+  hasValidIp(): boolean {
+    const controls = Array.from(this.ips.controls.values());
+    const requiredControls = controls.filter((control) => {
+      return control.value.ip !== '' && control.value.ip !== null && control.value.ip !== undefined;
+    });
+    return requiredControls.length > 0;
   }
 
   addIp(item, index) {
-    this.uniqueIps.add(item.value.ip);
+    this.validIp = this.hasValidIp();
     if (index === 0) {
       this.ips.setControl(0, this.fb.group({
         ip: [this.ips.at(0).value.ip, Validators.pattern(this.regExpForIpAddress())],
@@ -57,6 +66,7 @@ export class DomainWhitelistComponent implements OnInit {
   }
 
   deleteIp(item, index) {
+    this.validIp = this.hasValidIp();
     const lastItemIp = this.ips.at(this.ips.controls.length - 1).value.ip;
     if (this.savedIps.includes(item.value.ip)) {
       this.isDataModified = true;
@@ -114,7 +124,7 @@ export class DomainWhitelistComponent implements OnInit {
   }
 
   regExpForIpAddress() {
-    return '\\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b';
+    return '^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
   }
 
 }
