@@ -83,15 +83,13 @@ export class DomainWhitelistComponent implements OnInit {
   }
 
   rePopulateAfterSaving(whiteListedIps: string[]) {
-    console.log('this is form length', this.ips.controls.length);
-    console.log('this is whitelist length', whiteListedIps.length);
     const formGroupArray = [];
     for (let i = 0; i < whiteListedIps.length; i++) {
       formGroupArray.push(this.fb.group({
         ip: [whiteListedIps[i],
           Validators.pattern(this.regExpForIpAddress())],
-        add: this.whiteListingLimit - whiteListedIps.length > 0 && i === whiteListedIps.length - 1,
-        remove: !(i === 0)
+        add: (this.whiteListingLimit - whiteListedIps.length > 0) && (i === whiteListedIps.length - 1) && (whiteListedIps.length >= 2) || whiteListedIps.length === 1,
+        remove: !(i === 0) || (whiteListedIps.length > 1 && i === 0)
       }));
     }
 
