@@ -4,7 +4,8 @@
     <div class="form-inline">
       <div formArrayName="ips">
         <div *ngFor="let item of ips.controls; let ipIndex=index" [formGroupName]="ipIndex">
-          <input type="text" class="form-control my-2 mr-1" formControlName="ip" placeholder="e.g: 12.34.45.89"/>
+          <input type="text" class="form-control ip-input my-2 mr-1" [ngClass]="{'valid-input': item.value.ip}"
+                 formControlName="ip" placeholder="e.g: 12.34.45.89"/>
           <span *ngIf="item.value.remove" (click)="deleteIp(item, ipIndex)">
             <i class="fa fa-minus  px-1"></i>
           </span>
@@ -18,7 +19,7 @@
       Max limit reached!!!
     </p>
     <button type="submit" class="btn btn-primary"
-            [disabled]="!domainWhiteListForm.valid || domainWhiteListForm.pristine">
+            [disabled]="domainWhiteListForm.valid && domainWhiteListForm.pristine ? !isDataModified : !domainWhiteListForm.valid">
       Save
     </button>
   </form>

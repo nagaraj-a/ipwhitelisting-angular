@@ -14,7 +14,7 @@ export class DomainWhitelistComponent implements OnInit {
   whiteListingLimit: number;
   uniqueIps: Set<string> = new Set();
   savedIps = [];
-  isDataModified = false;
+  isDataModified: boolean;
   validIp = true;
 
 
@@ -27,6 +27,7 @@ export class DomainWhitelistComponent implements OnInit {
     this.domainWhiteListForm = this.fb.group({
       ips: this.fb.array([this.fb.group({ip: ['', Validators.pattern(this.regExpForIpAddress())], add: true, remove: false})])
     });
+    this.isDataModified = false;
   }
 
   hasValidIp(): boolean {
@@ -38,6 +39,10 @@ export class DomainWhitelistComponent implements OnInit {
   }
 
   addIp(item, index) {
+    const ip = item.value.ip;
+    if (ip !== '' && ip !== null && ip !== undefined) {
+      this.isDataModified = true;
+    }
     this.validIp = this.hasValidIp();
     if (index === 0) {
       this.ips.setControl(0, this.fb.group({
@@ -68,7 +73,9 @@ export class DomainWhitelistComponent implements OnInit {
   deleteIp(item, index) {
     this.validIp = this.hasValidIp();
     const lastItemIp = this.ips.at(this.ips.controls.length - 1).value.ip;
-    if (this.savedIps.includes(item.value.ip)) {
+    const ip = item.value.ip;
+
+    if (this.savedIps.includes(item.value.ip) && (ip !== '' && ip !== null && ip !== undefined)) {
       this.isDataModified = true;
     }
     this.ips.removeAt(index);
@@ -99,6 +106,7 @@ export class DomainWhitelistComponent implements OnInit {
   }
 
   rePopulateAfterSaving(whiteListedIps: string[]) {
+    this.isDataModified = false;
     const formGroupArray = [];
     for (let i = 0; i < whiteListedIps.length; i++) {
       formGroupArray.push(this.fb.group({
