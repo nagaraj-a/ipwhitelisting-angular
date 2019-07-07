@@ -1,7 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {FormArray, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
-import {isEmpty} from 'rxjs/operators';
 
 @Component({
   selector: 'app-domain-whitelist',
@@ -12,10 +11,8 @@ export class DomainWhitelistComponent implements OnInit {
 
   domainWhiteListForm: FormGroup;
   whiteListingLimit: number;
-  uniqueIps: Set<string> = new Set();
   savedIps = [];
   isDataModified: boolean;
-  validIp = true;
 
 
   constructor(public fb: FormBuilder, private activatedRoute: ActivatedRoute) {
@@ -30,34 +27,18 @@ export class DomainWhitelistComponent implements OnInit {
     this.isDataModified = false;
   }
 
-  hasValidIp(): boolean {
-    const controls = Array.from(this.ips.controls.values());
-    const requiredControls = controls.filter((control) => {
-      return control.value.ip !== '' && control.value.ip !== null && control.value.ip !== undefined;
-    });
-    return requiredControls.length > 0;
-  }
-
   addIp(item, index) {
     const ip = item.value.ip;
     if (ip !== '' && ip !== null && ip !== undefined) {
       this.isDataModified = true;
     }
-    this.validIp = this.hasValidIp();
-    if (index === 0) {
-      this.ips.setControl(0, this.fb.group({
-        ip: [this.ips.at(0).value.ip, Validators.pattern(this.regExpForIpAddress())],
-        add: false,
-        remove: true
-      }));
-      this.ips.push(this.fb.group({ip: ['', Validators.pattern(this.regExpForIpAddress())], add: true, remove: true}));
-    } else {
-      this.ips.setControl(index, this.fb.group({
-        ip: [this.ips.at(index).value.ip, Validators.pattern(this.regExpForIpAddress())],
-        add: false,
-        remove: true
-      }));
+    this.ips.setControl(index, this.fb.group({
+      ip: [item.value.ip, Validators.pattern(this.regExpForIpAddress())],
+      add: false,
+      remove: true
+    }));
 
+    if (this.ips.controls.length < this.whiteListingLimit) {
       this.ips.push(this.fb.group({
         ip: ['', Validators.pattern(this.regExpForIpAddress())],
         add: !(this.ips.controls.length + 1 === this.whiteListingLimit),
@@ -71,19 +52,20 @@ export class DomainWhitelistComponent implements OnInit {
   }
 
   deleteIp(item, index) {
-    this.validIp = this.hasValidIp();
-    const lastItemIp = this.ips.at(this.ips.controls.length - 1).value.ip;
-    const ip = item.value.ip;
+    if (this.ips.controls.length > 1) {
+      const lastItemIp = this.ips.at(this.ips.controls.length - 1).value.ip;
+      const ip = item.value.ip;
 
-    if (this.savedIps.includes(item.value.ip) && (ip !== '' && ip !== null && ip !== undefined)) {
-      this.isDataModified = true;
+      if (this.savedIps.includes(item.value.ip) && (ip !== '' && ip !== null && ip !== undefined)) {
+        this.isDataModified = true;
+      }
+      this.ips.removeAt(index);
+      this.ips.setControl(this.ips.controls.length - 1, this.fb.group({
+        ip: [lastItemIp, Validators.pattern(this.regExpForIpAddress())],
+        add: true,
+        remove: this.ips.controls.length > 1
+      }));
     }
-    this.ips.removeAt(index);
-    this.ips.setControl(this.ips.controls.length - 1, this.fb.group({
-      ip: [lastItemIp, Validators.pattern(this.regExpForIpAddress())],
-      add: true,
-      remove: this.ips.controls.length >= 2
-    }));
   }
 
   save() {

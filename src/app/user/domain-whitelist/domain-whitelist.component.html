@@ -9,7 +9,7 @@
           <span *ngIf="item.value.remove" (click)="deleteIp(item, ipIndex)">
             <i class="fa fa-minus  px-1"></i>
           </span>
-          <span *ngIf="item.value.add" (click)="addIp(item, ipIndex)">
+          <span *ngIf="item.value.add && item.valid" (click)="addIp(item, ipIndex)">
             <i class="fa fa-plus px-1"></i>
           </span>
         </div>
@@ -19,7 +19,7 @@
       Max limit reached!!!
     </p>
     <button type="submit" class="btn btn-primary"
-            [disabled]="domainWhiteListForm.valid && domainWhiteListForm.pristine ? !isDataModified : !domainWhiteListForm.valid">
+            [disabled]="domainWhiteListForm.valid && domainWhiteListForm.pristine ? !isDataModified : !domainWhiteListForm.valid && !isDataModified">
       Save
     </button>
   </form>
